@@ -1,4 +1,3 @@
-# start edits
 # add global variable
 agv <- function(...) {
   if(getRversion() >= "2.15.1") {
