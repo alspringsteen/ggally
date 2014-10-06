@@ -296,7 +296,7 @@ ggally_cor <- function(data, mapping, corAlignPercent = 0.6, ...){
       yP=0.5,
       xrange = xrange,
       yrange = yrange,
-      size = 14, #size=cor_text_size,
+      size = 6, #size=cor_text_size,
       ...
     ) +
     #element_bw() +
