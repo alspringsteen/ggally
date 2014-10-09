@@ -300,7 +300,7 @@ ggally_cor <- function(data, mapping, corAlignPercent = 0.6, ...){
       color = "black",
       ...
     ) +
-    #element_bw() +
+    element_bw() +
     theme(legend.position = "none", 
           panel.grid.major = element_blank(), 
           axis.ticks = element_blank(), 
