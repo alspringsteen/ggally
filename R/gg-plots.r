@@ -297,6 +297,7 @@ ggally_cor <- function(data, mapping, corAlignPercent = 0.6, ...){
       yrange = yrange,
       size = 6, #size=cor_text_size,
       family = "Courier",
+      color = "black",
       ...
     ) +
     #element_bw() +
