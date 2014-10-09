@@ -567,6 +567,7 @@ getPlot <- function(plotMatrix, rowFromTop, columnFromLeft){
 #'  ggpairs(tips[,1:3])
 print.ggpairs <- function(x, ...){
   plotObj <- x
+  gp <- get.gpar()
 
   # If using internal axis labels, extend the plotting region out since
   # variable names on the margins will not be used
@@ -614,7 +615,7 @@ if(!identical(plotObj$axisLabels,"internal")) {
 
   # Left Side
   for(i in 1:numCol){
-    grid.text(names(plotObj$data[,plotObj$columns])[i],0,0.5,rot=90,just=c("centre","centre"), vp = vplayout(as.numeric(i),1))
+    grid.text(names(plotObj$data[,plotObj$columns])[i],0,0.5,rot=90,just=c("centre","centre"), gp = gpar(fontsize=20), vp = vplayout(as.numeric(i),1))
   }
 
   popViewport()# layout
