@@ -568,6 +568,7 @@ getPlot <- function(plotMatrix, rowFromTop, columnFromLeft){
 print.ggpairs <- function(x, ...){
   plotObj <- x
 
+
   # If using internal axis labels, extend the plotting region out since
   # variable names on the margins will not be used
   if(identical(plotObj$axisLabels,"internal")) {
