@@ -290,22 +290,21 @@ ggally_cor <- function(data, mapping, corAlignPercent = 0.6, ...){
         #cor_signif,
         sep="",collapse=""
       ),
-      mapping,
+      mapping = aes(color = "black"),
+      #mapping,
       xP=0.5,
       yP=0.5,
       xrange = xrange,
       yrange = yrange,
       size = 6, #size=cor_text_size,
       family = "Courier",
-      colour = "black",
       ...
     ) +
     #element_bw() +
     theme(legend.position = "none", 
           panel.grid.major = element_blank(), 
           axis.ticks = element_blank(), 
-          panel.border = element_rect(linetype = "dashed", colour = "black", fill=NA),
-          text = element_text(colour="black"))
+          panel.border = element_rect(linetype = "dashed", colour = "black", fill=NA))
 
     p$type <- "continuous"
     p$subType <- "cor"
