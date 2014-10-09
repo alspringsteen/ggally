@@ -31,7 +31,7 @@ agv <- function(...) {
 #' )
 ggally_points <- function(data, mapping, ...){
 
-  p <- ggplot(data = data, mapping = mapping) + geom_point(...) + theme(axis.title = element_text(size=22, color="red"), strip.text = element_text(size=24, color="red"))
+  p <- ggplot(data = data, mapping = mapping) + geom_point(...) + theme(axis.title = element_text(size=22, color="red"), strip.text.x = element_text(size=24, color="red"))
   p$type <- "continuous"
   p$subType <- "points"
   p
