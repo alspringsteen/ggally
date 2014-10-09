@@ -567,7 +567,6 @@ getPlot <- function(plotMatrix, rowFromTop, columnFromLeft){
 #'  ggpairs(tips[,1:3])
 print.ggpairs <- function(x, ...){
   plotObj <- x
-  gp <- get.gpar()
 
   # If using internal axis labels, extend the plotting region out since
   # variable names on the margins will not be used
