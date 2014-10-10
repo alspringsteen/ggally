@@ -32,7 +32,7 @@ agv <- function(...) {
 ggally_points <- function(data, mapping, ...){
   
   n=3
-  breaks = seq(min(data[,mapping$x),max(data[,mapping$x]), length.out = n)
+  breaks = seq(min(data[,mapping$x]),max(data[,mapping$x]), length.out = n)
 
   p <- ggplot(data = data, mapping = mapping) + geom_point(...)
   p <- p + scale_x_continuous(breaks=breaks)
