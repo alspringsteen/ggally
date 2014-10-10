@@ -30,7 +30,7 @@ agv <- function(...) {
 #'   )
 #' )
 ggally_points <- function(data, mapping, ...){
-  
+  #
   n=3
   breaks = seq(min(data[,mapping$x]),max(data[,mapping$x]), length.out = n)
 
