@@ -615,7 +615,7 @@ if(!identical(plotObj$axisLabels,"internal")) {
 
   # Left Side
   for(i in 1:numCol){
-    grid.text(names(plotObj$data[,plotObj$columns])[i],0,0.5,rot=90,just=c("centre","centre"), gp = gpar(fontfamily="Courier",fontsize=14), vp = vplayout(as.numeric(i),1))
+    grid.text(names(plotObj$data[,plotObj$columns])[i],0,0.5,rot=90,just=c("centre","centre"), gp = gpar(fontfamily="Courier",fontsize=14, col="red"), vp = vplayout(as.numeric(i),1))
   }
 
   popViewport()# layout
