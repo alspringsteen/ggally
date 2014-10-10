@@ -31,11 +31,11 @@ agv <- function(...) {
 #' )
 ggally_points <- function(data, mapping, ...){
   #
-  n=3
+  n=5 # we will grab the middle 3 break points
   breaks = seq(min(data[,paste(mapping$x)]),max(data[,paste(mapping$x)]), length.out = n)
-
-  p <- ggplot(data = data, mapping = mapping) + geom_point(...)
-  p <- p + scale_x_continuous(breaks=breaks)
+  
+  
+  p <- ggplot(data = data, mapping = mapping) + geom_point(...) + scale_x_continuous(breaks=breaks[2:4])
   p$type <- "continuous"
   p$subType <- "points"
   p
