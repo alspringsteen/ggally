@@ -35,7 +35,7 @@ ggally_points <- function(data, mapping, ...){
   breaks = seq(min(data[,paste(mapping$x)]),max(data[,paste(mapping$x)]), length.out = n)
   
   
-  p <- ggplot(data = data, mapping = mapping) + geom_point(...) + scale_x_continuous(breaks=breaks[2:4])
+  p <- ggplot(data = data, mapping = mapping) + geom_point(...) #+ scale_x_continuous(breaks=breaks[2:4])
   p$type <- "continuous"
   p$subType <- "points"
   p
