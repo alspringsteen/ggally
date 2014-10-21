@@ -42,7 +42,7 @@ ggally_points <- function(data, mapping, ...){
   # figure out how to format the breaks as labels
   tiks <- breaks[c(2,4,6)]
   dif <- max(data[,paste(mapping$x)]) - min(data[,paste(mapping$x)])
-  if(dif < 0.5) tiks <- mround(breaks[c(2,4,6)], 0.05)
+  if(dif < 0.5) tiks <- mround(breaks[c(2,4,6)], 0.1)
   if(dif > 0.5 & dif < 1) tiks <- mround(breaks[c(2,4,6)], 0.1)
   if(dif > 1 & dif < 10) tiks <- mround(breaks[c(2,4,6)], 1)
   if(dif > 10 & dif < 50) tiks <- mround(breaks[c(2,4,6)], 5)
