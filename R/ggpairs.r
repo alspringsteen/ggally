@@ -582,8 +582,8 @@ print.ggpairs <- function(x, ...){
     v1 <- viewport(
 #    x = unit(0.5, "npc") + unit(1,"lines"),
 #    y = unit(0.5, "npc") + unit(1,"lines"),
-    width=unit(1, "npc") - unit(3,"lines"),
-    height=unit(1, "npc") - unit(3, "lines")
+    width=unit(1, "npc") - unit(2,"lines"),
+    height=unit(1, "npc") - unit(2, "lines")
   )
   }
 
