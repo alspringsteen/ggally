@@ -30,11 +30,25 @@ agv <- function(...) {
 #'   )
 #' )
 ggally_points <- function(data, mapping, ...){
-  #
+  
+  # function to round to nicely formatted digits
+  mround <- function(x,base){
+	  base*round(x/base)
+  }
+  
   n=5 # we will grab the middle 3 break points
   breaks = seq(min(data[,paste(mapping$x)]),max(data[,paste(mapping$x)]), length.out = n)
   
-  p <- ggplot(data = data, mapping = mapping) + geom_point(...) + scale_x_continuous(breaks=breaks[2:4])
+  # figure out how to format the breaks as labels
+  dif <- max(data[,paste(mapping$x)]) − min(data[,paste(mapping$x)])
+  if(dif < 0) tiks <- mround(breaks[2:4], 0.01)
+  if(dif < 10) tiks <- mround(breaks[2:4], 0.5)
+  if(dif < 50) tiks <- mround(breaks[2:4], 5)
+  if(dif < 100) tiks <- mround(breaks[2:4], 10)
+  if(dif < 500) tiks <- mround(breaks[2:4], 25)
+  if(dif > 500) tiks <- mround(breaks[2:4], 50)
+  
+  p <- ggplot(data = data, mapping = mapping) + geom_point(...) + scale_x_continuous(breaks=tiks)
   p$type <- "continuous"
   p$subType <- "points"
   p
