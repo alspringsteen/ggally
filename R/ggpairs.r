@@ -582,8 +582,8 @@ print.ggpairs <- function(x, ...){
     v1 <- viewport(
 #    x = unit(0.5, "npc") + unit(1,"lines"),
 #    y = unit(0.5, "npc") + unit(1,"lines"),
-    width=unit(1, "npc") - unit(2,"lines"),
-    height=unit(1, "npc") - unit(2, "lines")
+    width=unit(1, "npc") - unit(3,"lines"),
+    height=unit(1, "npc") - unit(3, "lines")
   )
   }
 
@@ -808,7 +808,7 @@ if(!identical(plotObj$axisLabels,"internal")) {
 
         # if not internal labels
         else {
-          p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(rep(0,4), "lines"))
+          p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(rep(-1,4), "lines"))
         }
 
         showLegend = FALSE
