@@ -50,7 +50,7 @@ ggally_points <- function(data, mapping, ...){
   if(dif > 100 & dif < 500) tiks <- mround(breaks[c(2,4,6)], 25)
   if(dif > 500) tiks <- mround(breaks[c(2,4,6)], 50)
   
-  p <- ggplot(data = data, mapping = mapping) + geom_point(...) + scale_x_continuous(breaks=tiks)
+  p <- ggplot(data = data, mapping = mapping) + geom_point(...) #+ scale_x_continuous(breaks=tiks)
   p$type <- "continuous"
   p$subType <- "points"
   p
