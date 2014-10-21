@@ -799,7 +799,7 @@ if(!identical(plotObj$axisLabels,"internal")) {
         }
         # Need to scale both variables for continuous plots
         else if (identical(p$type,"continuous") && !identical(p$subType,"cor")) {
-          p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(c(3,3,0,0), "lines"))
+          p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(c(3,2,0,0), "lines"))
         }
         # Scale the variable for numeric diagonal plots
         else if (identical(p$type,"diag") && is.numeric(p$data[,as.character(p$mapping$x)])) {
