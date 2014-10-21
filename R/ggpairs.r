@@ -609,7 +609,7 @@ print.ggpairs <- function(x, ...){
 # axis labels
 if(!identical(plotObj$axisLabels,"internal")) {
   # viewport for Left Names
-  pushViewport(viewport(width=unit(1, "npc") + unit(2,"lines"), height=unit(1, "npc") - unit(3, "lines")))
+  pushViewport(viewport(width=unit(1, "npc") - unit(0.5,"lines"), height=unit(1, "npc") - unit(1, "lines")))
 
   pushViewport(viewport(layout = grid.layout(numCol, numCol, widths = rep(1,numCol), heights = rep(1,numCol) )))
 
@@ -622,7 +622,7 @@ if(!identical(plotObj$axisLabels,"internal")) {
   popViewport()# spacing
 
   # viewport for Bottom Names
-  pushViewport(viewport(width=unit(1, "npc") - unit(3,"lines"), height=unit(1, "npc") + unit(2, "lines")))
+  pushViewport(viewport(width=unit(1, "npc") - unit(1,"lines"), height=unit(1, "npc") - unit(0.5, "lines")))
 
   pushViewport(viewport(layout = grid.layout(numCol, numCol, widths = rep(1,numCol), heights = rep(1,numCol) )))
 
