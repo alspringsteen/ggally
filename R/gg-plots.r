@@ -40,12 +40,14 @@ ggally_points <- function(data, mapping, ...){
   breaks = seq(min(data[,paste(mapping$x)]),max(data[,paste(mapping$x)]), length.out = n)
   
   # figure out how to format the breaks as labels
+  tiks <- breaks[2:4]
   dif <- max(data[,paste(mapping$x)]) - min(data[,paste(mapping$x)])
-  if(dif < 0) tiks <- mround(breaks[2:4], 0.01)
-  if(dif < 10) tiks <- mround(breaks[2:4], 0.5)
-  if(dif < 50) tiks <- mround(breaks[2:4], 5)
-  if(dif < 100) tiks <- mround(breaks[2:4], 10)
-  if(dif < 500) tiks <- mround(breaks[2:4], 25)
+  if(dif < 0.5) tiks <- mround(breaks[2:4], 0.05)
+  if(dif > 0.5 & dif < 1) tiks <- mround(breaks[2:4], 0.1)
+  if(dif > 1 & dif < 10) tiks <- mround(breaks[2:4], 1)
+  if(dif > 10 & dif < 50) tiks <- mround(breaks[2:4], 5)
+  if(dif > 50 & dif < 100) tiks <- mround(breaks[2:4], 10)
+  if(dif > 100 & dif < 500) tiks <- mround(breaks[2:4], 25)
   if(dif > 500) tiks <- mround(breaks[2:4], 50)
   
   p <- ggplot(data = data, mapping = mapping) + geom_point(...) + scale_x_continuous(breaks=tiks)
