@@ -34,8 +34,7 @@ ggally_points <- function(data, mapping, ...){
   n=5 # we will grab the middle 3 break points
   breaks = seq(min(data[,paste(mapping$x)]),max(data[,paste(mapping$x)]), length.out = n)
   
-  
-  p <- ggplot(data = data, mapping = mapping) + geom_point(...) #+ scale_x_continuous(breaks=breaks[2:4])
+  p <- ggplot(data = data, mapping = mapping) + geom_point(...) + scale_x_continuous(breaks=breaks[2:4])
   p$type <- "continuous"
   p$subType <- "points"
   p
@@ -300,7 +299,7 @@ ggally_cor <- function(data, mapping, corAlignPercent = 0.6, ...){
       yP=0.5,
       xrange = xrange,
       yrange = yrange,
-      size = 4, #size=cor_text_size,
+      size = 3.5, #size=cor_text_size,
       family = "Helvetica",
       ...
     ) +
