@@ -808,7 +808,7 @@ if(!identical(plotObj$axisLabels,"internal")) {
 
         # if not internal labels
         else {
-          p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(rep(-1,4), "lines"))
+          p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(rep(0.1,4), "lines"))
         }
 
         showLegend = FALSE
