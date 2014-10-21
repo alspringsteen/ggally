@@ -798,10 +798,10 @@ if(!identical(plotObj$axisLabels,"internal")) {
 
         }
         # Need to scale both variables for continuous plots
-        else if (identical(p$type,"continuous") && !identical(p$subType,"cor" && columnPos != 1)) {
+        else if (identical(p$type,"continuous") && !identical(p$subType,"cor") && columnPos != 1) {
           p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(rep(0,4), "lines")) 
         }
-        else if (identical(p$type,"continuous") && !identical(p$subType,"cor" && columnPos == 1)) {
+        else if (identical(p$type,"continuous") && !identical(p$subType,"cor") && columnPos == 1) {
           p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(c(0,0,0,-1), "lines")) #top,right,bottom,left
         }
         # Scale the variable for numeric diagonal plots
