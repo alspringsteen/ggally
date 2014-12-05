@@ -65,20 +65,22 @@
 #' @param diag see Details
 #' @param params vector of parameters to be applied to geoms.  Each value must have a corresponding name, such as \code{c(binwidth = 0.1)}.
 #' @param ... other parameters being supplied to geom's aes, such as color
-#' @param axisLabels either "internal" for labels in the diagonal plots, "none" for no axis labels, or "show" to display axisLabels
+#' @param axisLabels either "show" to display axisLabels, "internal" for labels in the diagonal plots, or "none" for no axis labels
+#' @param columnLabels label names to be displayed.  Defaults to names of columns being used.
 #' @param legends boolean to determine the printing of the legend in each plot. Not recommended.
 #' @param verbose boolean to determine the printing of "Plot #1, Plot #2...."
 #' @keywords hplot
+#' @import ggplot2
 #' @author Barret Schloerke \email{schloerke@@gmail.com}, Jason Crowley \email{crowley.jason.s@@gmail.com}, Di Cook \email{dicook@@iastate.edu}, Heike Hofmann \email{hofmann@@iastate.edu}, Hadley Wickham \email{h.wickham@@gmail.com}
 #' @return ggpair object that if called, will print
 #' @examples
 #' # plotting is reduced to the first couple of examples.
 #' # Feel free to print the ggpair objects created in the examples
 #'
-#' data(tips, package="reshape")
+#' data(tips, package = "reshape")
 #' pm <- ggpairs(tips[,1:3])
 #' # pm
-#' pm <- ggpairs(tips)
+#' pm <- ggpairs(tips, 1:3, columnLabels = c("Total Bill", "Tip", "Sex"))
 #' # pm
 #' pm <- ggpairs(tips, upper = "blank")
 #' # pm
@@ -86,7 +88,7 @@
 #'
 #' # Custom Example
 #' pm <- ggpairs(
-#'   tips[,1:4],
+#'   tips[,c(1,3,4,2)],
 #'   upper = list(continuous = "density", combo = "box"),
 #'   lower = list(continuous = "points", combo = "dot")
 #' )
@@ -98,10 +100,11 @@
 #'
 #' # Custom Example
 #' pm <- ggpairs(
-#'  diamonds.samp[,1:3],
+#'  diamonds.samp[,1:5],
 #'  upper = list(continuous = "density", combo = "box"),
 #'  lower = list(continuous = "points", combo = "dot"),
 #'  color = "cut",
+#'  alpha = 0.4,
 #'  title = "Diamonds"
 #' )
 #' # pm
@@ -114,15 +117,20 @@
 #' )
 #' # bad_plots
 #'
-#' # Labels on the outside, grids won't line up
+#' # Only Variable Labels on the diagonal (no axis labels)
+#' pm <- ggpairs(tips[,1:3], axisLabels="internal")
+#' # pm
+#' # Only Variable Labels on the outside (no axis labels)
 #' pm <- ggpairs(tips[,1:3], axisLabels="none")
 #' # pm
 #'
 #' # Custom Examples
 #' custom_car <- ggpairs(mtcars[,c("mpg","wt","cyl")], upper = "blank", title = "Custom Example")
 #' # ggplot example taken from example(geom_text)
-#'   plot <- ggplot(mtcars, aes(x=wt, y=mpg, label=rownames(mtcars)))
-#'   plot <- plot + geom_text(aes(colour=factor(cyl)), size = 3) + scale_colour_discrete(l=40)
+#'   plot <- ggplot2::ggplot(mtcars, ggplot2::aes(x=wt, y=mpg, label=rownames(mtcars)))
+#'   plot <- plot +
+#'     ggplot2::geom_text(ggplot2::aes(colour=factor(cyl)), size = 3) +
+#'     ggplot2::scale_colour_discrete(l=40)
 #' custom_car <- putPlot(custom_car, plot, 1, 2)
 #' personal_plot <- ggally_text(
 #'   "ggpairs allows you\nto put in your\nown plot.\nLike that one.\n <---"
@@ -138,18 +146,35 @@ ggpairs <- function(
   diag = list(),
   params = NULL,
   ...,
-  axisLabels = "internal",
+  axisLabels = "show",
+  columnLabels = colnames(data[,columns]),
   legends = FALSE,
   verbose = FALSE
 ){
-  require(ggplot2)
   printInfo <- FALSE
 
   verbose = verbose || printInfo
 
-  if (! axisLabels %in% c("none", "show", "internal")) {
-    warning("axisLabels not in c('none', 'show', 'internal').  Reverting to 'internal'")
-    axisLabels <- "internal"
+  axisLabelChoices <- c("show", "internal", "none")
+  axisLabelChoice <- pmatch(axisLabels, axisLabelChoices)
+  if (is.na(axisLabelChoice)) {
+    warning("axisLabels not in c('show', 'internal', 'none').  Reverting to 'show'")
+    axisLabelChoice <- 1
+  }
+  axisLabels <- axisLabelChoices[axisLabelChoice]
+
+  if (any(columns > ncol(data))) {
+    stop(paste("Make sure your 'columns' values are less than ", ncol(data), ".\n\tcolumns = c(", paste(columns, collapse = ", "), ")", sep = ""))
+  }
+  if (any(columns < 1)) {
+    stop(paste("Make sure your 'columns' values are positive.", "\n\tcolumns = c(", paste(columns, collapse = ", "), ")", sep = ""))
+  }
+  if (any((columns %% 1) != 0)) {
+    stop(paste("Make sure your 'columns' values are integers.", "\n\tcolumns = c(", paste(columns, collapse = ", "), ")", sep = ""))
+  }
+
+  if (length(columnLabels) != length(columns)) {
+    stop("The length of the 'columnLabels' does not match the length of the 'columns' being used.")
   }
 
   if(!is.list(upper) && upper == "blank"){
@@ -204,9 +229,12 @@ ggpairs <- function(
   }
 
   data <- as.data.frame(data)
-      for ( i in 1:dim(data)[2] ) {
-        if(is.character(data[,i])) data[,i] <- as.factor(data[,i])
-      }
+  for ( i in 1:dim(data)[2] ) {
+    if(is.character(data[,i])) {
+      data[,i] <- as.factor(data[,i])
+    }
+  }
+
   numCol <- length(columns)
   if(printInfo)
     cat("data col: ", numCol,"\n")
@@ -270,7 +298,7 @@ ggpairs <- function(
 
       combo_params <- addAndOverwriteAes(params, section_params)
 
-        p <- make_ggpair_text(subType, combo_aes, combo_params, printInfo)
+      p <- make_ggpair_text(subType, combo_aes, combo_params, printInfo)
 #      else if(subType == "smooth")
 #        p <- ggally_smooth(data, combo_aes, params)
 #      else if(subType == "density")
@@ -331,19 +359,21 @@ ggpairs <- function(
       combo_aes <- addAndOverwriteAes(aes_string(x = xColName, y = yColName, ...), section_aes)
       combo_params <- addAndOverwriteAes(params, section_params)
 
-      if(subType == "ratio")
+      if(subType == "ratio") {
         p <- ggally_ratio(data[, c(yColName, xColName)])
-      else if(subType == "facetbar"){
-        if(!is.null(combo_aes$colour)){
+      } else if(subType == "facetbar") {
+        if(!is.null(combo_aes$colour)) {
           combo_aes <- addAndOverwriteAes(combo_aes, aes_string(fill = combo_aes$colour))
         }
         p <- make_ggpair_text(subType, combo_aes, combo_params, printInfo)
       }
-      else if(subType == "blank")
+      else if(subType == "blank") {
         p <- "ggally_blank('blank')"
-      else p <- ggally_text("Incorrect\nPlot",size=6)
+      } else {
+        p <- ggally_text("Incorrect\nPlot",size=6)
+      }
 
-    } else if(type == "stat_bin-num"){
+    } else if(type == "stat_bin-num") {
       if(printInfo)cat("stat_bin-num\n")
 
       subType <- diag$continuous
@@ -354,10 +384,11 @@ ggpairs <- function(
 
       combo_params <- addAndOverwriteAes(params, diag$params)
 
-      if(subType != "blank")
+      if(subType != "blank") {
         p <- make_ggpair_text(paste(subType, "Diag", sep = "", collapse = ""), combo_aes, combo_params,printInfo)
-      else
+      } else {
         p <- "blank"
+      }
 #
 #        p <- ggally_densityDiag(data, combo_aes, params)
 #      else if(subType == "bar")
@@ -374,7 +405,6 @@ ggpairs <- function(
 
       combo_params <- addAndOverwriteAes(params, diag$params)
 
-
       p <- make_ggpair_text(paste(subType, "Diag", sep = "", collapse = ""), combo_aes, combo_params, printInfo)
 #      if(subType == "bar")
 #        p <- ggally_barDiag(data, combo_aes, params)
@@ -382,15 +412,15 @@ ggpairs <- function(
 #      #  p <- ggally_ratio(dataSelect)
 #      else if(subType == "blank")
 #        p <- ggally_blank()
-    } else if(type == "label"){
+    } else if(type == "label") {
       combo_aes <- addAndOverwriteAes(aes_string(x = xColName, ...), diag$aes_string)
       combo_params <- addAndOverwriteAes(params, diag$params)
+      combo_params <- addAndOverwriteAes(combo_params, c("label" = columnLabels[posX]))
 
       p <- make_ggpair_text("diagAxis", combo_aes, combo_params, printInfo)
     }
 
     ggpairsPlots[[length(ggpairsPlots)+1]] <- p
-
   }
 
   plotMatrix <- list(
@@ -401,10 +431,12 @@ ggpairs <- function(
     verbose = verbose,
     printInfo = printInfo,
     axisLabels = axisLabels,
-    legends = legends
+    columnLabels = columnLabels,
+    legends = legends,
+    gg = NULL
   )
 
-  attributes(plotMatrix)$class <- "ggpairs"
+  attributes(plotMatrix)$class <- c("gg", "ggpairs")
 
   plotMatrix
 }
@@ -420,6 +452,12 @@ ggpairs <- function(
 #' @keywords internal
 make_ggpair_text <- function(func, mapping, params=NULL, printInfo = FALSE){
 
+  nonCallVals <- which(lapply(mapping, mode) == "call")
+  if (length(nonCallVals) > 0) {
+    nonCallNames <- names(mapping)[nonCallVals]
+    stop(paste("variables: ", paste(shQuote(nonCallNames), sep = ", "), " have non standard format: ", paste(shQuote(unlist(mapping[nonCallVals])), collapse = ", "), ".  Please rename the columns and use labels instead.", sep = ""))
+  }
+
   func_text <- paste("ggally_", func, collapse = "", sep = "")
   test_for_function <- tryCatch(
     get(func_text, mode = "function"),
@@ -427,10 +465,12 @@ make_ggpair_text <- function(func, mapping, params=NULL, printInfo = FALSE){
       "bad_function_name"
   )
 
-  if(identical(test_for_function, "bad_function_name")) return( ggally_text("Incorrect\nPlot",size=6))
+  if(identical(test_for_function, "bad_function_name")) {
+    return( ggally_text("Incorrect\nPlot",size=6))
+  }
 
 
-  text <- paste(func_text, "(ggally_data, aes(", paste(names(mapping), " = ", as.character(mapping), sep = "", collapse = ", "), ")", sep = "", collapse = "")
+  text <- paste(func_text, "(ggally_data, ggplot2::aes(", paste(names(mapping), " = ", as.character(mapping), sep = "", collapse = ", "), ")", sep = "", collapse = "")
 
   if(!is.null(params)){
     params[is.character(params)] <- paste("\"", params[is.character(params)], "\"", sep = "")
@@ -489,8 +529,10 @@ vplayout <- function(x, y) {
 #' @examples
 #' custom_car <- ggpairs(mtcars[,c("mpg","wt","cyl")], upper = "blank", title = "Custom Example")
 #' # ggplot example taken from example(geom_text)
-#'   plot <- ggplot(mtcars, aes(x=wt, y=mpg, label=rownames(mtcars)))
-#'   plot <- plot + geom_text(aes(colour=factor(cyl)), size = 3) + scale_colour_discrete(l=40)
+#'   plot <- ggplot2::ggplot(mtcars, ggplot2::aes(x=wt, y=mpg, label=rownames(mtcars)))
+#'   plot <- plot +
+#'     ggplot2::geom_text(ggplot2::aes(colour=factor(cyl)), size = 3) +
+#'     ggplot2::scale_colour_discrete(l=40)
 #' custom_car <- putPlot(custom_car, plot, 1, 2)
 #' personal_plot <- ggally_text(
 #'   "ggpairs allows you\nto put in your\nown plot.\nLike that one.\n <---"
@@ -519,7 +561,7 @@ putPlot <- function(plotMatrix, plotObj, rowFromTop, columnFromLeft){
 #' @author Barret Schloerke \email{schloerke@@gmail.com}
 #' @export
 #' @examples
-#'  data(tips, package="reshape")
+#'  data(tips, package = "reshape")
 #'  plotMatrix2 <- ggpairs(tips[,3:2], upper = list(combo = "denstrip"))
 #'  getPlot(plotMatrix2, 1, 2)
 getPlot <- function(plotMatrix, rowFromTop, columnFromLeft){
@@ -534,6 +576,9 @@ getPlot <- function(plotMatrix, rowFromTop, columnFromLeft){
   if (is.character(plot_text)) {
     if (plot_text != "blank") {
       p <- eval_ggpair(plot_text, plotMatrix$data)
+      if (! is.null(plotMatrix$gg)) {
+        p <- p + plotMatrix$gg
+      }
       # attributes( p)$class <- "ggplot"
     } else {
       p <- ggally_blank()
@@ -560,42 +605,77 @@ getPlot <- function(plotMatrix, rowFromTop, columnFromLeft){
 #' @method print ggpairs
 #' @keywords internal
 #' @author Barret Schloerke \email{schloerke@@gmail.com}
-#' @importFrom grid gpar grid.layout grid.newpage grid.text grid.rect popViewport pushViewport unit viewport
+#' @importFrom grid gpar grid.layout grid.newpage grid.text grid.rect popViewport pushViewport unit viewport grid.draw
 #' @export
 #' @examples
-#'  data(tips, package="reshape")
-#'  ggpairs(tips[,1:3])
-print.ggpairs <- function(x, ...){
-  plotObj <- x
+#'  data(tips, package = "reshape")
+#'  pMat <- ggpairs(tips, c(1,3,2), color = "sex")
+#'  pMat # calls print(pMat), which calls print.ggpairs(pMat)
+#'
+#'  ## defaults; (prints strips on top and right edges of matrix)
+#'  # print(pMat, left = 0.2, spacing = 0.03, bottom = 0.1, showStrips = NULL)
+#'
+#'  ## show none of the strips
+#'  # print(pMat, showStrips = FALSE)
+#'
+#'  ## show all of the strips
+#'  # print(pMat, showStrips = TRUE)
+#'
+#'  ## give the left axis labels area a proportion of 3 plot size
+#'  # print(pMat, leftWidthProportion = 3)
+#'
+#'  ## give the bottom axis labels area a proportion of 1 plot size
+#'  # print(pMat, bottomHeightProportion = 1)
+#'
+#'  ## give the spacing between plots a proportion of 1 plot size
+#'  # print(pMat, spacing = 1)
+print.ggpairs <- function(
+  x,
+  leftWidthProportion = 0.4,
+  bottomHeightProportion = 0.4,
+  spacingProportion = 0.03,
+  showStrips = NULL,
+  ...
+) {
 
+  plotObj <- x
 
   # If using internal axis labels, extend the plotting region out since
   # variable names on the margins will not be used
   if(identical(plotObj$axisLabels,"internal")) {
     v1 <- viewport(
-#    x = unit(0.5, "npc") + unit(1,"lines"),
-    y = unit(0.5, "npc") - unit(0.5,"lines"),
-    width=unit(1, "npc") - unit(1,"lines"),
-    height=unit(1, "npc") - unit(2, "lines")
-  )
+      y = unit(0.5, "npc") - unit(0.5,"lines"),
+      width=unit(1, "npc") - unit(1,"lines"),
+      height=unit(1, "npc") - unit(2, "lines")
+    )
   } else {
     v1 <- viewport(
-#    x = unit(0.5, "npc") + unit(1,"lines"),
-#    y = unit(0.5, "npc") + unit(1,"lines"),
-    width=unit(1, "npc") - unit(3,"lines"),
-    height=unit(1, "npc") - unit(3, "lines")
-  )
+      width=unit(1, "npc") - unit(3,"lines"),
+      height=unit(1, "npc") - unit(3, "lines")
+    )
   }
 
   numCol <- length(plotObj$columns)
 
+  if (identical(plotObj$axisLabels,"show")) {
+    showLabels <- TRUE
+    viewPortWidths <- c(leftWidthProportion, 1, rep(c(spacingProportion,1), numCol - 1))
+    viewPortHeights <- c(rep(c(1,spacingProportion), numCol - 1), 1, bottomHeightProportion)
+  } else {
+    showLabels <- FALSE
+    viewPortWidths <- c(1, rep(c(spacingProportion,1), numCol - 1))
+    viewPortHeights <- c(rep(c(1,spacingProportion), numCol - 1), 1)
+  }
+  viewPortCount <- length(viewPortWidths)
+
   v2 <- viewport(
-       layout = grid.layout(
-               numCol,
-               numCol,
-               widths = rep(1,numCol),
-               heights = rep(1,numCol)
-     ))
+    layout = grid.layout(
+      viewPortCount,
+      viewPortCount,
+      ## added left and bottom spacers for axis labels
+      widths = viewPortWidths,
+      heights = viewPortHeights
+  ))
 
   grid.newpage()
 
@@ -606,35 +686,52 @@ print.ggpairs <- function(x, ...){
   }
 
   # This plots the variable names on the margins, which is not needed if using internal
-# axis labels
-if(!identical(plotObj$axisLabels,"internal")) {
-  # viewport for Left Names
-  pushViewport(viewport(width=unit(1, "npc") - unit(0.5,"lines"), height=unit(1, "npc") - unit(1, "lines")))
+  # axis labels
+  if(!identical(plotObj$axisLabels,"internal")) {
+    # viewport for Left Names
+    pushViewport(viewport(width=unit(1, "npc") - unit(2,"lines"), height=unit(1, "npc") - unit(3, "lines")))
 
-  pushViewport(viewport(layout = grid.layout(numCol, numCol, widths = rep(1,numCol), heights = rep(1,numCol) )))
+    ## new for axis spacingProportion
+    pushViewport(viewport(layout = grid.layout(
+      viewPortCount, viewPortCount,
+      widths = viewPortWidths, heights = viewPortHeights
+    )))
 
-  # Left Side
-  for(i in 1:numCol){
-    grid.text(names(plotObj$data[,plotObj$columns])[i],-0.05,0.5,rot=90,just=c("centre","centre"), gp = gpar(fontfamily="Helvetica",fontsize=9,col="black"), vp = vplayout(as.numeric(i),1))
+    # Left Side
+    for(i in 1:numCol){
+      grid.text(plotObj$columnLabels[i],0,0.5,rot=90,just=c("centre","centre"), vp = vplayout(as.numeric(i) * 2 - 1 ,1))
+    }
+
+    popViewport()# layout
+    popViewport()# spacing
+
+    # viewport for Bottom Names
+    pushViewport(viewport(width=unit(1, "npc") - unit(3,"lines"), height=unit(1, "npc") - unit(2, "lines")))
+
+    ## new for axis spacing
+    pushViewport(viewport(layout = grid.layout(
+      viewPortCount, viewPortCount,
+      widths = viewPortWidths, heights = viewPortHeights
+    )))
+
+
+    # Bottom Side
+    for(i in 1:numCol){
+      grid.text(
+        plotObj$columnLabels[i],
+        0.5,
+        0,
+        just = c("centre","centre"),
+        vp = vplayout(
+          ifelse(showLabels, 2*numCol, 2*numCol - 1),
+          ifelse(showLabels, 2*i, 2*i - 1)
+        )
+      )
+    }
+
+    popViewport() #layout
+    popViewport() #spacing
   }
-
-  popViewport()# layout
-  popViewport()# spacing
-
-  # viewport for Bottom Names
-  pushViewport(viewport(width=unit(1, "npc") - unit(1,"lines"), height=unit(1, "npc") - unit(0.5, "lines")))
-
-  pushViewport(viewport(layout = grid.layout(numCol, numCol, widths = rep(1,numCol), heights = rep(1,numCol) )))
-
-
-  # Bottom Side
-  for(i in 1:numCol){
-    grid.text(names(plotObj$data[,plotObj$columns])[i],0.5,-0.05,just=c("centre","centre"), gp = gpar(fontfamily="Helvetica",fontsize=9,col="black"), vp = vplayout(numCol, i))
-  }
-
-  popViewport() #layout
-  popViewport() #spacing
-}
 
 ##############################################################
 ####################  End Viewports  #########################
@@ -648,201 +745,137 @@ if(!identical(plotObj$axisLabels,"internal")) {
   for(rowPos in 1:numCol){
     for(columnPos in 1:numCol){
       p <- getPlot(plotObj, rowPos, columnPos)
-      if(!is_blank_plot(p)){
 
-        pos <- columnPos + (rowPos - 1) * numCol
-        type <- p$type
-        subType <- p$subType
-        if(plotObj$printInfo) {
-          cat("Pos #", pos)
-          if(!is.null(type)) cat(": type = ", type)
-          if(!is.null(subType)) cat(": subType = ", subType)
-          cat("\n")
+      if (is_blank_plot(p)) {
+        next
+      }
+
+      pGtable <- ggplot_gtable(ggplot_build(p))
+
+      ## New axis labels
+
+      # left axis
+      if (columnPos == 1 && showLabels) {
+        if (identical(plotObj$verbose, TRUE)) {
+          print("trying left axis")
         }
+        pAxisLabels <- gtable_filter(pGtable, "axis-l")
 
-        # hack because ggplot2 is annoying
-        # if(!is.null(subType)){
-        #   if(subType == "facethist"){
-        #     p <- p + scale_x_continuous(NULL) + scale_y_continuous(NULL)
-        #   } else if (subType %in% c("box", "dot")) {
-        #     p <- p + scale_x_continuous(NULL, labels="", breaks=1)
-        #   } else if (subType == "ratio"){
-        #     p <- p +
-        #       scale_x_continuous(
-        #         NULL,
-        #         limits=c(1,length(p$x_names) + 1),
-        #         breaks=1:(length(p$x_names) + 1),
-        #         labels=c(p$x_names,""),
-        #         minor_breaks=FALSE
-        #       ) +
-        #       scale_y_continuous(
-        #         NULL,
-        #         limits=c(1,length(p$y_names) + 1),
-        #         breaks=1:(length(p$y_names) + 1),
-        #         labels=c(p$y_names,""),
-        #         minor_breaks=FALSE
-        #       )
-
-        #   }
-        # }
-
-        noTicks <- c("internal", "none")
-        removeTicks <- plotObj$axisLabels %in% noTicks
-        if( ! is.null(p$axisLabels)) {
-          removeTicks <- p$axisLabels %in% noTicks
-        }
-
-        if( columnPos != 1 || removeTicks){
-          p <- p + theme(axis.text.y = element_blank(), axis.title.y = element_blank() )
-        }
-
-        if( (rowPos != numCol) || removeTicks){
-          p <- p + theme(axis.text.x = element_blank(), axis.title.x = element_blank() )
-        }
-
-        if(removeTicks) {
-          p <- p + theme(
-            # strip.background = element_blank(),
-            # strip.text.x     = element_blank(),
-            # strip.text.y     = element_blank(),
-            # axis.ticks       = element_blank()
-            strip.background = element_rect(fill="white", colour = NA),
-            strip.text.x     = element_blank(),
-            strip.text.y     = element_blank(),
-            axis.ticks       = element_blank()
+        # make a viewport that is chopped into numFacets parts vertically
+        grobLength <- length(pAxisLabels$grobs)
+        leftAxisLayoutHeight <- rep(c(0.1, 1), grobLength)[-1]
+        leftAxisLayoutHeightUnits <- rep(c("lines", "null"), grobLength)[-1]
+        vpLAxis <- viewport(
+          layout = grid.layout(
+            nrow = 2 * grobLength - 1,
+            ncol = 1,
+            widths  = unit(1, "null"),
+            heights = unit(leftAxisLayoutHeight, leftAxisLayoutHeightUnits)
           )
-
-        }
-
-        # Adjusts for the blank space left by faceting, and manually
-        # sets the limits for numeric axes to 1% of the variable's
-        # range below the min and above the max.
-        if (identical(p$type,"combo")) {
-          # Scale the numeric variable; the numeric variable is
-          # mapped to the y variable for dot and box plots, but to the
-          # x variable for the others
-          p <- p + labs(x = NULL, y = NULL)
-
-          # if (p$subType %in% c("dot","box")) {
-          #   if (is.numeric(p$data[,as.character(p$mapping$y)])) {
-          #     ymin <- min(p$data[,as.character(p$mapping$y)])
-          #     ymax <- max(p$data[,as.character(p$mapping$y)])
-          #   p <- p + labs(x = NULL, y = NULL) +
-          #     scale_y_continuous(limits=c(ymin-.01*(ymax-ymin),ymax+.01*(ymax-ymin)))
-          #   }
-          #   if (is.numeric(p$data[,as.character(p$mapping$x)])) {
-          #     xmin <- min(p$data[,as.character(p$mapping$x)])
-          #     xmax <- max(p$data[,as.character(p$mapping$x)])
-          #     p <- p + labs(x = NULL, y = NULL) +
-          #       scale_x_continuous(limits=c(xmin-.01*(xmax-xmin),xmax+.01*(xmax-xmin)))
-          #   }
-
-          # }
-
-          # Adjust for blank space left by faceting
-          if(plotObj$printInfo) {
-            print(p$subType)
-            print(p$horizontal)
-          }
-
-          if (p$horizontal) {
-#            p <- p + theme(plot.margin = unit(c(0,-0.5,0,0), "lines"))
-
-            # HACK!
-            if (p$subType %in% c("facethist")) {
-              p <- p + theme(plot.margin = unit(c(0, -0.5, 0, 0), "lines"))
-            } else {
-              p <- p + theme(plot.margin = unit(c(0, -0.5, 0, -0.5), "lines"))
-            }
-
-            if (columnPos != numCol) {
-              p <- p + theme(
-                strip.background = element_blank(),
-                strip.text.x     = element_blank(),
-                strip.text.y     = element_blank()
-              )
-            }
-
-          } else {
-            # vertical
-
-            # default
-            # p <- p + theme(plot.margin = unit(c(-0.5,0,-0.5,-0.5), "lines"))
-
-            if (p$subType %in% c("facethist")) {
-              p <- p + theme(plot.margin = unit(c(-0.5, 0, 0, 0), "lines"))
-            } else {
-              p <- p + theme(plot.margin = unit(c(-0.5, 0, -0.5, 0), "lines"))
-            }
-
-            if (rowPos != 1) {
-              p <- p + theme(
-                strip.background = element_blank(),
-                strip.text.x     = element_blank(),
-                strip.text.y     = element_blank()
-              )
-            }
-          }
-        } # end if p$type==combo
-        # Adjust for blank space left by faceting in faceted bar plot
-        else if (identical(p$subType,"facetbar")) {
-          p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(c(0,-0.5,0,0), "lines"))
-
-          if (rowPos != 1) {
-            p <- p + theme(
-              strip.background = element_blank(),
-              strip.text.x     = element_blank(),
-              strip.text.y     = element_blank()
-            )
-          }
-
-        }
-        # Need to scale both variables for continuous plots
-        else if (identical(p$type,"continuous") && !identical(p$subType,"cor") && columnPos != 1) {
-          p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(rep(0,4), "lines")) 
-        }
-        #else if (identical(p$type,"continuous") && !identical(p$subType,"cor") && columnPos == 1) {
-        #  p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(c(0,0,0,0), "lines"), axis.text = element_blank()) #top,right,bottom,left
-        #}
-        # Scale the variable for numeric diagonal plots
-        else if (identical(p$type,"diag") && is.numeric(p$data[,as.character(p$mapping$x)])) {
-          p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(rep(0,4), "lines"), axis.text = element_blank(), axis.ticks = element_blank())
-        }
-
-        # if not internal labels
-        else {
-          p <- p + labs(x = NULL, y = NULL) + theme(plot.margin = unit(rep(0.1,4), "lines"))
-        }
-
-        showLegend = FALSE
-        if (!is.null(plotObj$legends)) showLegend <- identical(plotObj$legends, TRUE)
-        if (showLegend == FALSE) {
-          if (!is.null(p$ggally$legend) && ! is.na(p$ggally$legend)) {
-            showLegend <- identical(p$ggally$legend, TRUE)
-          }
-        }
-        if (showLegend == FALSE) {
-          p <- p + theme(legend.position = "none")
-        }
-
-        grid.rect(
-          gp = gpar(fill = "white", lty = "blank"),
-          vp = vplayout(rowPos, columnPos)
         )
 
-        if(identical(plotObj$verbose, TRUE)) {
-          print(p, vp = vplayout(rowPos, columnPos))
-        } else {
-          suppressMessages(suppressWarnings(print(p, vp = vplayout(rowPos, columnPos))))
+        pushViewport(vplayout(rowPos * 2 - 1, 1))
+        pushViewport(vpLAxis)
+          for (lAxisPos in 1:grobLength) {
+            pushViewport(vplayout(lAxisPos*2 - 1, 1))
+            grid.draw(pAxisLabels$grobs[[lAxisPos]])
+            popViewport()
+          }
+        popViewport() # vpLAxis
+        popViewport() # left Axis 'plot' area
+      }
+
+      ## bottom axis
+      if (rowPos == numCol && showLabels) {
+        if (identical(plotObj$verbose, TRUE)) {
+          print("trying bottom axis")
+        }
+        pAxisLabels <- gtable_filter(pGtable, "axis-b")
+        grobLength <- length(pAxisLabels$grobs)
+
+        botAxisLayoutWidth <- rep(c(0.1, 1), grobLength)[-1]
+        botAxisLayoutWidthUnits <- rep(c("lines", "null"), grobLength)[-1]
+        vpBAxis <- viewport(
+          layout = grid.layout(
+            nrow = 1,
+            ncol = 2 * grobLength - 1,
+            heights = unit(1, "null"),
+            widths  = unit(botAxisLayoutWidth, botAxisLayoutWidthUnits)
+          )
+        )
+
+        pushViewport(vplayout( 2 * numCol, 2 * columnPos))
+        pushViewport(vpBAxis)
+          for (bAxisPos in 1:grobLength) {
+            pushViewport(vplayout(1, bAxisPos * 2 - 1))
+              grid.draw(pAxisLabels$grobs[[bAxisPos]])
+            popViewport()
+          }
+        popViewport() # vpBAxis
+        popViewport() # bottom Axis 'plot' area
+
+      }
+
+      ## get 'plot panel' grob to draw
+
+      # ask about strips
+      layoutNames <- c("panel")
+      allLayoutNames <- c("panel", "strip-right", "strip-top")
+      if (is.null(showStrips)) {
+        # make sure it's a ggally plot
+        pShowStrips <- (!is.null(p$type)) && (!is.null(p$subType))
+
+        # make sure it's on the outer right and top edge
+        if (pShowStrips) {
+          if (columnPos == numCol) {
+            layoutNames <- c(layoutNames, "strip-right")
+          }
+          if (rowPos == 1) {
+            layoutNames <- c(layoutNames, "strip-top")
+          }
         }
 
-      }# end plot alterations
-    }# end cols
-  }# end rows
+      } else if (showStrips) {
+        layoutNames <- allLayoutNames
+      }
+
+      # if they have a custom plot, make sure it shows up
+      if (! is.null(p$axisLabels)) {
+        # pShowStrips <- ! identical(p$axisLabels, FALSE)
+
+        # copied from old code.  want to replace it to something like above
+        if (p$axisLabels %in% c("internal", "none")) {
+          layoutNames <- allLayoutNames
+        }
+      }
+
+      # get correct panel (and strips)
+      layoutRows <- pGtable$layout$name %in% layoutNames
+
+      layoutInfo <- pGtable$layout[layoutRows, ]
+      layoutTB <- layoutInfo[,c("t", "b")]
+      layoutLR <- layoutInfo[,c("l", "r")]
+
+      pPanel <- pGtable[
+        min(layoutTB):max(layoutTB),
+        min(layoutLR):max(layoutLR)
+      ]
+
+      ## Draw 'plot panel'
+      pushViewport(vplayout(2 * rowPos - 1, ifelse(showLabels, 2 * columnPos, 2*columnPos - 1)))
+        suppressMessages(suppressWarnings(
+          grid.draw(pPanel)
+        ))
+      popViewport() # 'plot panel' area
+
+    } # end cols
+  } # end rows
 
   popViewport() #layout
   popViewport() #spacing
 }
+
+
 
 #' Is Blank Plot?
 #' Find out if the plot equals a blank plot
@@ -850,7 +883,7 @@ if(!identical(plotObj$axisLabels,"internal")) {
 #' @keywords internal
 #' @examples
 #'  GGally:::is_blank_plot(ggally_blank())
-#'  GGally:::is_blank_plot(ggally_points(mtcars, aes_string(x = "disp", y = "hp")))
+#'  GGally:::is_blank_plot(ggally_points(mtcars, ggplot2::aes_string(x = "disp", y = "hp")))
 #'
 is_blank_plot <- function(p){
   if( !is.null(p$subType) && !is.null(p$type))
@@ -866,12 +899,13 @@ is_blank_plot <- function(p){
 #' @keywords internal
 #' @author Barret Schloerke \email{schloerke@@gmail.com}
 #' @return aes_string output
+#' @import ggplot2
 #' @examples
 #'  data(diamonds, package="ggplot2")
-#'  diamonds.samp <- diamonds[sample(1:dim(diamonds)[1],100),]
+#'  diamonds.samp <- diamonds[sample(1:dim(diamonds)[1],1000),]
 #'  ggpairs(diamonds.samp, columns = 5:7,
-#'   upper = list(continuous = "cor", aes_string = aes_string(color = "clarity")),
-#'   lower = list(continuous = "cor", aes_string = aes_string(color = "cut")),
+#'   upper = list(continuous = "cor", aes_string = ggplot2::aes_string(color = "clarity")),
+#'   lower = list(continuous = "cor", aes_string = ggplot2::aes_string(color = "cut")),
 #'   color = "color",
 #'   title = "Diamonds Sample")
 #'
@@ -879,6 +913,12 @@ addAndOverwriteAes <- function(current, new) {
   if (length(new) >= 1) {
     for (i in 1:length(new)) {
       current[names(new)[i]] <- new[i]
+    }
+  }
+
+  for (curName in names(current)) {
+    if (is.null(current[[curName]])) {
+      current[[curName]] <- NULL
     }
   }
 
