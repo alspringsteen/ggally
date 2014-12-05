@@ -632,7 +632,7 @@ getPlot <- function(plotMatrix, rowFromTop, columnFromLeft){
 print.ggpairs <- function(
   x,
   leftWidthProportion = 0.4,
-  bottomHeightProportion = 0.55,
+  bottomHeightProportion = 0.8,
   spacingProportion = 0.03,
   showStrips = NULL,
   ...
@@ -689,7 +689,7 @@ print.ggpairs <- function(
   # axis labels
   if(!identical(plotObj$axisLabels,"internal")) {
     # viewport for Left Names
-    pushViewport(viewport(width=unit(1, "npc") - unit(2,"lines"), height=unit(1, "npc") - unit(3, "lines")))
+    pushViewport(viewport(width=unit(1, "npc") - unit(2,"lines"), height=unit(1, "npc") - unit(3, "lines"), gp=gpar(fontsize=12)))
 
     ## new for axis spacingProportion
     pushViewport(viewport(layout = grid.layout(
@@ -706,7 +706,7 @@ print.ggpairs <- function(
     popViewport()# spacing
 
     # viewport for Bottom Names
-    pushViewport(viewport(width=unit(1, "npc") - unit(3,"lines"), height=unit(1, "npc") - unit(2, "lines")))
+    pushViewport(viewport(width=unit(1, "npc") - unit(3,"lines"), height=unit(1, "npc") - unit(2, "lines"), gp=gpar(fontsize=12)))
 
     ## new for axis spacing
     pushViewport(viewport(layout = grid.layout(
