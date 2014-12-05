@@ -632,7 +632,7 @@ getPlot <- function(plotMatrix, rowFromTop, columnFromLeft){
 print.ggpairs <- function(
   x,
   leftWidthProportion = 0.4,
-  bottomHeightProportion = 0.4,
+  bottomHeightProportion = 0.55,
   spacingProportion = 0.03,
   showStrips = NULL,
   ...
